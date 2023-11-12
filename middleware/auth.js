@@ -39,7 +39,7 @@ const authentication = async(req, res, next) => {
 
         req.UserData = {
             id: userData.id,
-            email: userData.email,
+            email: userData.email
         }
 
         next()
