@@ -1,140 +1,86 @@
-const { Comment, Photo, User } = require('../models');
-const jwt = require('jsonwebtoken');
-const debug = require('debug')('app:commentController');
-const { SECRET_KEY } = require('../config');
+const { Comment, User, Photo } = require("../models");
 
-// Create a new comment
-exports.createComment = async (req, res) => {
-  try {
-    const { comment, PhotoId } = req.body;
-    const token = req.headers.token;
+class CommentController {
+  static async createComment(req, res) {
+    try {
+      const userData = req.UserData;
 
-    // Verify token
-    const decoded = jwt.verify(token, SECRET_KEY);
+      const { comment, PhotoId } = req.body;
 
-    // Create comment for the authenticated user
-    const newComment = await Comment.create({
-      comment,
-      UserId: decoded.userId,
-      PhotoId,
-    });
+      const data = await Comment.create({
+        comment,
+        UserId: userData.id,
+        PhotoId,
+      });
 
-    debug('Comment created successfully');
-    return res.status(201).json({
-      comment: {
-        id: newComment.id,
-        comment: newComment.comment,
-        UserId: newComment.UserId,
-        PhotoId: newComment.PhotoId,
-        updatedAt: newComment.updatedAt,
-        createdAt: newComment.createdAt,
-      },
-    });
-  } catch (error) {
-    debug('Error creating comment:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// Get all comments for the authenticated user
-exports.getAllComments = async (req, res) => {
-  try {
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
-
-    // Fetch comments for the authenticated user
-    const comments = await Comment.findAll({
-      where: { UserId: decoded.userId },
-      include: [
-        {
-          model: Photo,
-          attributes: ['id', 'title', 'caption', 'poster_image_url'],
-          include: [
-            {
-              model: User,
-              attributes: ['id', 'username', 'profile_image_url', 'phone_number'],
-            },
-          ],
-        },
-        {
-          model: User,
-          attributes: ['id', 'username', 'profile_image_url', 'phone_number'],
-        },
-      ],
-    });
-
-    debug('Fetched all comments successfully');
-    return res.status(200).json({ comments });
-  } catch (error) {
-    debug('Error fetching comments:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// Update a comment (user can only update their own comments)
-exports.updateComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const { comment: newComment } = req.body;
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
-
-    // Find the comment by ID
-    const comment = await Comment.findByPk(commentId);
-
-    // Check if the user owns the comment
-    if (comment.UserId !== decoded.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      res.status(201).json(data);
+    } catch (error) {
+      res.status(500).json(error);
     }
-
-    // Update the comment
-    await comment.update({
-      comment: newComment,
-    });
-
-    debug('Comment updated successfully');
-    return res.status(200).json({
-      comment: {
-        id: comment.id,
-        comment: comment.comment,
-        UserId: comment.UserId,
-        PhotoId: comment.PhotoId,
-        updatedAt: comment.updatedAt,
-        createdAt: comment.createdAt,
-      },
-    });
-  } catch (error) {
-    debug('Error updating comment:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
 
-// Delete a comment (user can only delete their own comments)
-exports.deleteComment = async (req, res) => {
-  try {
-    const { commentId } = req.params;
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
+  static async getAllComments(req, res) {
+    try {
+      const data = await Comment.findAll({
+        include: [User, Photo],
+      });
 
-    // Find the comment by ID
-    const comment = await Comment.findByPk(commentId);
-
-    // Check if the user owns the comment
-    if (comment.UserId !== decoded.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json(error);
     }
-
-    // Delete the comment
-    await comment.destroy();
-
-    debug('Comment deleted successfully');
-    return res.status(200).json({ message: 'Your comment has been successfully deleted' });
-  } catch (error) {
-    debug('Error deleting comment:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+
+  static async updateComment(req, res) {
+    try {
+      const { comment } = req.body;
+      const { commentId } = req.params;
+
+      const data = await Comment.update(
+        { comment },
+        {
+          where: {
+            id: commentId,
+          },
+          returning: true,
+        }
+      );
+
+      if (!data[0]) {
+        throw {
+          code: 404,
+          message: "Data Not Found",
+        };
+      }
+
+      res.status(200).json(data[1]);
+    } catch (error) {
+      res.status(error.code || 500).json(error.message);
+    }
+  }
+
+  static async deleteComment(req, res) {
+    try {
+      const { commentId } = req.params;
+
+      const data = await Comment.destroy({
+        where: {
+          id: commentId,
+        },
+      });
+
+      if (!data) {
+        throw {
+          code: 404,
+          message: "Data Not Found",
+        };
+      }
+
+      res.status(200).json("Success delete comment");
+    } catch (error) {
+      res.status(error.code || 500).json(error.message);
+    }
+  }
+}
+
+module.exports = CommentController;

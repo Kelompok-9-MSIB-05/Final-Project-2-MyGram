@@ -1,140 +1,87 @@
-const { Photo, User, Comment } = require('../models');
-const jwt = require('jsonwebtoken');
-const debug = require('debug')('app:photoController');
-const { SECRET_KEY } = require('../config');
+const { Photo, User, Comment } = require("../models");
 
-// Create a new photo
-exports.createPhoto = async (req, res) => {
-  try {
-    const { title, caption, poster_image_url } = req.body;
-    const token = req.headers.token;
+class PhotoController {
+  static async createPhoto(req, res) {
+    try {
+      const userData = req.UserData;
 
-    // Verify token
-    const decoded = jwt.verify(token, SECRET_KEY);
+      const { poster_image_url, title, caption } = req.body;
 
-    // Create photo for the authenticated user
-    const photo = await Photo.create({
-      title,
-      caption,
-      poster_image_url,
-      UserId: decoded.userId,
-    });
+      const data = await Photo.create({
+        poster_image_url,
+        title,
+        caption,
+        UserId: userData.id,
+      });
 
-    debug('Photo created successfully');
-    return res.status(201).json({
-      id: photo.id,
-      poster_image_url: photo.poster_image_url,
-      title: photo.title,
-      caption: photo.caption,
-      UserId: photo.UserId,
-    });
-  } catch (error) {
-    debug('Error creating photo:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// Get all photos for the authenticated user
-exports.getAllPhotos = async (req, res) => {
-  try {
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
-
-    // Fetch photos for the authenticated user
-    const photos = await Photo.findAll({
-      where: { UserId: decoded.userId },
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username', 'profile_image_url'],
-        },
-        {
-          model: Comment,
-          include: [
-            {
-              model: User,
-              attributes: ['username'],
-            },
-          ],
-        },
-      ],
-    });
-
-    debug('Fetched all photos successfully');
-    return res.status(200).json({ photos });
-  } catch (error) {
-    debug('Error fetching photos:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-};
-
-// Update a photo (user can only update their own photos)
-exports.updatePhoto = async (req, res) => {
-  try {
-    const { photoId } = req.params;
-    const { title, caption, poster_image_url } = req.body;
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
-
-    // Find the photo by ID
-    const photo = await Photo.findByPk(photoId);
-
-    // Check if the user owns the photo
-    if (photo.UserId !== decoded.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      res.status(201).json(data);
+    } catch (error) {
+      res.status(500).json(error);
     }
-
-    // Update the photo
-    await photo.update({
-      title,
-      caption,
-      poster_image_url,
-    });
-
-    debug('Photo updated successfully');
-    return res.status(200).json({
-      photo: {
-        id: photo.id,
-        title: photo.title,
-        caption: photo.caption,
-        poster_image_url: photo.poster_image_url,
-        UserId: photo.UserId,
-        createdAt: photo.createdAt,
-      },
-      updatedAt: photo.updatedAt,
-    });
-  } catch (error) {
-    debug('Error updating photo:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
 
-// Delete a photo (user can only delete their own photos)
-exports.deletePhoto = async (req, res) => {
-  try {
-    const { photoId } = req.params;
-    const token = req.headers.token;
-    const decoded = jwt.verify(token, SECRET_KEY);
+  static async getAllPhotos(req, res) {
+    try {
+      const data = await Photo.findAll({
+        include: [User, Comment],
+      });
 
-    // Find the photo by ID
-    const photo = await Photo.findByPk(photoId);
-
-    // Check if the user owns the photo
-    if (photo.UserId !== decoded.userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      res.status(200).json({ photos: data });
+    } catch (error) {
+      res.status(500).json(error);
     }
-
-    // Delete the photo
-    await photo.destroy();
-
-    debug('Photo deleted successfully');
-    return res.status(200).json({ message: 'Your photo has been successfully deleted' });
-  } catch (error) {
-    debug('Error deleting photo:', error);
-    console.error(error);
-    return res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+
+  static async updatePhoto(req, res) {
+    try {
+      const { title, caption, poster_image_url } = req.body;
+      const { photoId } = req.params;
+
+      const data = await Photo.update(
+        { title, caption, poster_image_url },
+        {
+          where: {
+            id: photoId,
+          },
+          returning: true,
+        }
+      );
+
+      if (!data[0]) {
+        throw {
+          code: 404,
+          message: "Data Not Found",
+        };
+      }
+
+      res.status(200).json({ photo: data[1][0] });
+    } catch (error) {
+      res.status(error.code || 500).json(error.message);
+    }
+  }
+
+  static async deletePhoto(req, res) {
+    try {
+      const { photoId } = req.params;
+
+      const data = await Photo.destroy({
+        where: {
+          id: photoId,
+        },
+      });
+
+      if (!data) {
+        throw {
+          code: 404,
+          message: "Data Not Found",
+        };
+      }
+
+      res.status(200).json("Success delete photo");
+    } catch (error) {
+      res.status(error.code || 500).json(error.message);
+    }
+  }
+}
+
+module.exports = PhotoController;

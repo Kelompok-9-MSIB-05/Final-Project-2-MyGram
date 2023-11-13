@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const photoController = require('../controllers/photoController');
+const commentController = require('../controllers/commentController');
+const { authentication } = require('../middleware/auth');
 
-router.post('/', photoController.createPhoto);
-router.get('/', photoController.getAllPhotos);
-router.put('/:photoId', photoController.updatePhoto);
-router.delete('/:photoId', photoController.deletePhoto);
+router.post('/', authentication, commentController.createComment);
+router.get('/', authentication, commentController.getAllComments);
+router.put('/:id', authentication, commentController.updateComment);
+router.delete('/:id', authentication, commentController.deleteComment);
 
 module.exports = router;
