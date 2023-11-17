@@ -1,45 +1,56 @@
 // models/comment.js
-
 const { DataTypes, Model } = require('sequelize');
-const { sequelize } = require('../config/config'); // Sesuaikan dengan struktur proyek Anda
 
-class Comment extends Model {
-  static associate(models) {
-    Comment.belongsTo(models.User, { foreignKey: 'UserId' });
-    Comment.belongsTo(models.Photo, { foreignKey: 'PhotoId' });
+module.exports = (sequelize) => {
+  class Comment extends Model {
+    static associate(models) {
+      Comment.belongsTo(models.User, { foreignKey: 'UserId' });
+      Comment.belongsTo(models.Photo, { foreignKey: 'PhotoId' });
+    }
   }
-}
 
-Comment.init({
-  UserId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  PhotoId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  comment: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        args: true,
-        msg: 'Comment cannot be empty',
+  Comment.init(
+    {
+      comment: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            args: true,
+            message: 'Required',
+          },
+        },
+      },
+      UserId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'User',
+          key: 'id',
+        },
+      },
+      PhotoId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Photo',
+          key: 'id',
+        },
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
       },
     },
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-}, {
-  sequelize,
-  modelName: 'Comment',
-});
+    {
+      sequelize,
+      modelName: 'Comment',
+    }
+  );
 
-module.exports = Comment;
+  return Comment;
+};

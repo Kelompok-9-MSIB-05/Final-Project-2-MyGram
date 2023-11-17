@@ -1,8 +1,8 @@
 {
   "development": {
     "username": "postgres",
-    "password": "mojokerto123",
-    "database": "mygram",
+    "password": "ngabol123",
+    "database": "Finalproject",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },

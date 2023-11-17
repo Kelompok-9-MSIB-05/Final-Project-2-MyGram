@@ -1,21 +1,20 @@
-'use strict';
+//commentSeeders
+const { Comment } = require('../models');
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.bulkInsert('Comments', [
+    await Comment.bulkCreate([
       {
-        comment: 'Amazing photo!',
-        UserId: UserId,
-        PhotoId: PhotoId,
+        comment: 'Fotonya bagus sekali',
+        UserId: 8,
+        PhotoId: 1,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      // Tambahkan data comment lainnya jika diperlukan
-    ], {});
+    ],{});
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Comments', null, {});
-  }
+    await queryInterface.bulkDelete("Comments", null, {});
+  },
 };

@@ -1,22 +1,22 @@
-'use strict';
+//photoseeder
+const { Photo } = require('../models');
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.bulkInsert('Photos', [
+    // Tambahkan data photo di sini
+    await Photo.bulkCreate([
       {
         title: 'Beautiful Sunset',
-        caption: 'Nature is amazing!',
+        caption: 'An amazing sunset captured in all its glory.',
         poster_image_url: 'https://example.com/sunset.jpg',
-        UserId: UserId,
+        UserId: 8,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      // Tambahkan data photo lainnya jika diperlukan
-    ], {});
+    ],{});
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Photos', null, {});
-  }
+    await queryInterface.bulkDelete("Photos", null, {});
+  },
 };

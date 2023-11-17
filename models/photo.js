@@ -1,54 +1,78 @@
-// models/photo.js
-
-const { DataTypes, Model } = require('sequelize');
-const { sequelize } = require('../models'); // Sesuaikan dengan struktur proyek Anda
-
-class Photo extends Model {
-  static associate(models) {
-    Photo.belongsTo(models.User, { foreignKey: 'UserId' });
-    Photo.hasMany(models.Comment, { foreignKey: 'PhotoId' });
+'use strict';
+const {
+  Model
+} = require('sequelize');
+module.exports = (sequelize, DataTypes) => {
+  class Photo extends Model {
+    /**
+     * Helper method for defining associations.
+     * This method is not a part of Sequelize lifecycle.
+     * The `models/index` file will call this method automatically.
+     */
+    static associate(models) {
+      Photo.belongsTo(models.User, { foreignKey: 'UserId' });
+      Photo.hasMany(models.Comment, { foreignKey: 'PhotoId' });
+    }
   }
-}
 
-Photo.init({
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        args: true,
-        msg: 'Title cannot be empty',
+  Photo.init(
+    {
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            args: true,
+            message: 'Required',
+          },
+        },
+      },
+      caption: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            args: true,
+            message: 'Required',
+          },
+        },
+      },
+      poster_image_url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            args: true,
+            message: 'Required',
+          },
+          isUrl: {
+            args: true,
+            message: 'Invalid URL format',
+          },
+        },
+      },
+      UserId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'User',
+          key: 'id',
+        },
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
       },
     },
-  },
-  caption: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        args: true,
-        msg: 'Caption cannot be empty',
-      },
-    },
-  },
-  poster_image_url: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        args: true,
-        msg: 'Poster image URL cannot be empty',
-      },
-      isUrl: {
-        args: true,
-        msg: 'Invalid URL format for poster image',
-      },
-    },
-  },
-  UserId: DataTypes.INTEGER,
-}, {
-  sequelize,
-  modelName: 'Photo',
-});
+    {
+      sequelize,
+      modelName: 'Photo',
+    }
+  );
 
-module.exports = Photo;
+  return Photo;
+};
