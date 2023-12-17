@@ -26,7 +26,9 @@ class PhotoController {
         include: User,
       })
 
-      res.status(200).json(data)
+      res.status(200).json({
+        photos: data,
+      })
     } catch (error) {
       res.status(500).json(error)
     }
@@ -84,7 +86,9 @@ class PhotoController {
         }
       }
 
-      res.status(201).json(data)
+      res.status(200).json({
+        photo: data[1][0],
+      })
     } catch (error) {
       res.status(error.code || 500).json(error.message)
     }
@@ -106,7 +110,9 @@ class PhotoController {
         }
       }
 
-      res.status(200).json('Your photo has been successfully deleted')
+      res.status(200).json({
+        message: 'Your photo has been successfully deleted'
+      })
     } catch (error) {
       res.status(error.code || 500).json(error.message)
     }

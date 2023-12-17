@@ -22,7 +22,9 @@ class SocialMediaController {
                 UserId: userData.id
             })
 
-            res.status(201).json(data)
+            res.status(201).json({
+                social_media: data
+            })
         } catch (error) {
             res.status(500).json(error)
         }
@@ -35,7 +37,9 @@ class SocialMediaController {
                 include: User
             })
 
-            res.status(200).json(data)
+            res.status(200).json({
+                social_medias: data
+            })
         } catch (error) {
             res.status(500).json(error)
         }
@@ -92,7 +96,9 @@ class SocialMediaController {
                 }
             }
 
-            res.status(201).json(data)
+            res.status(200).json({
+                social_media: data[1][0]
+            })
         } catch (error) {
             res.status(error.code || 500).json(error.message)
         }
@@ -114,7 +120,9 @@ class SocialMediaController {
                 }
             }
 
-            res.status(200).json("Success delete social media")
+            res.status(200).json({
+                message: "Your social media has ben successfully deleted"
+            })
         } catch (error) {
             res.status(error.code || 500).json(error.message)
         }
