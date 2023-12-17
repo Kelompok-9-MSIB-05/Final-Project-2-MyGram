@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx jest --runInBand --detectOpenHandles --forceExit",
+    "db:create:test": "npx sequelize db:create",
+    "db:migrate:test": "npx sequelize db:migrate"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +22,8 @@
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^6.3.3"
   },
   "repository": {
     "type": "git",
