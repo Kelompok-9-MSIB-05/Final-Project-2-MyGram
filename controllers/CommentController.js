@@ -27,7 +27,9 @@ class CommentController {
         include: User,
       })
 
-      res.status(200).json(data)
+      res.status(200).json({
+        comments: data,
+      })
     } catch (error) {
       res.status(500).json(error)
     }
@@ -60,14 +62,13 @@ class CommentController {
 
   static async updateComment(req, res) {
     try {
-      const { name, social_media_url } = req.body
+      const { comment } = req.body
 
       const { id } = req.params
 
       const data = await Comment.update(
         {
-          name,
-          social_media_url,
+          comment,
         },
         {
           where: {
@@ -84,7 +85,9 @@ class CommentController {
         }
       }
 
-      res.status(201).json(data)
+      res.status(200).json({
+        comment: data[1][0],
+      })
     } catch (error) {
       res.status(error.code || 500).json(error.message)
     }
@@ -106,7 +109,9 @@ class CommentController {
         }
       }
 
-      res.status(200).json('Your comment has been successfully deleted')
+      res.status(200).json({
+        message: 'Your comment has been successfully deleted',
+      })
     } catch (error) {
       res.status(error.code || 500).json(error.message)
     }
